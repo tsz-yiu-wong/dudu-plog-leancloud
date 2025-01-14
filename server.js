@@ -15,7 +15,7 @@ AV.init({
 })
 
 // Comment the following line if you do not want to use masterKey.
-AV.Cloud.useMasterKey()
+// AV.Cloud.useMasterKey()
 
 const app = require('./app')
 
