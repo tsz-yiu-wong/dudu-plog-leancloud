@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>嘟嘟</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="main-container">
+    <%- include('partials/nav') %>
+    
+    <% if (currentUser) { %>
+      <div class="album-list">
+        <% if (albums.length > 0) { %>
+          <% albums.forEach(function(album) { %>
+            <div class="album-item">
+              <div class="album-content <%= album.get('isPublic') || album.get('creator').id === currentUser.id ? 'unlocked' : 'locked' %>">
+                <% if (album.get('isPublic') || album.get('creator').id === currentUser.id) { %>
+                  <a href="/album-list/<%= album.id %>">
+                <% } %>
+                <% if (album.get('cover')) { %>
+                  <img src="<%= album.get('cover').url %>" alt="<%= album.get('title') %>的封面">
+                <% } else { %>
+                  <div class="album-placeholder">
+                    <div class="empty-state-icon"><%= album.get('isPublic') || album.get('creator').id === currentUser.id ? '📁' : '🔒' %></div>
+                  </div>
+                <% } %>
+                <% if (album.get('isPublic') || album.get('creator').id === currentUser.id) { %>
+                  </a>
+                <% } %>
+              </div>
+              <div class="album-title"><%= album.get('title') %></div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="empty-state">
+            <div class="empty-state-icon">📁</div>
+            <div class="empty-state-text">还没有相册</div>
+          </div>
+        <% } %>
+      </div>
+
+      <div id="createAlbumModal" class="modal">
+        <div class="modal-content">
+          <h2>创建相册</h2>
+          <form method="POST" action="/album-list">
+            <div class="form-group">
+              <input type="text" name="title" placeholder="相册标题" required class="form-input">
+            </div>
+            <div class="form-group">
+              <textarea name="description" placeholder="相册描述（选填）" class="form-input" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <select name="isPublic" class="form-input">
+                <option value="true">所有人可见</option>
+                <option value="false">仅自己可见</option>
+              </select>
+            </div>
+            <div class="form-buttons">
+              <button type="button" class="cancel-button" onclick="closeModal()">取消</button>
+              <button type="submit" class="login-button">创建</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <a href="javascript:void(0)" onclick="checkCreatePermission()" class="add-button">+</a>
+      
+    <% } else { %>
+      <div class="welcome-message">
+        <p>请<a href="/login" class="login-link">登录</a>后查看</p>
+      </div>
+    <% } %>
+
+    <script>
+      async function checkCreatePermission() {
+        try {
+          const response = await fetch('/check-create-permission')
+          const data = await response.json()
+          
+          if (data.canCreate) {
+            openModal()
+          } else {
+            alert('乖乖看照片，不要乱点哦')
+          }
+        } catch (error) {
+          console.error('检查权限失败:', error)
+          alert('系统开小差了，请稍后再试')
+        }
+      }
+
+      function openModal() {
+        document.getElementById('createAlbumModal').style.display = 'flex';
+      }
+
+      function closeModal() {
+        document.getElementById('createAlbumModal').style.display = 'none';
+      }
+
+      // 点击模态框外部关闭
+      window.onclick = function(event) {
+        const modal = document.getElementById('createAlbumModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      }
+    </script>
+  </div>
+</body>
+</html> 

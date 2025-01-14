@@ -1,11 +1,17 @@
 'use strict'
 
 const AV = require('leanengine')
-
+/*
 AV.init({
   appId: process.env.LEANCLOUD_APP_ID,
   appKey: process.env.LEANCLOUD_APP_KEY,
   masterKey: process.env.LEANCLOUD_APP_MASTER_KEY
+})
+*/
+AV.init({
+  appId: "VBHczxK3DbzzAvGDq7I3FFCj-MdYXbMMI",
+  appKey: "03UD1qPJzpzgwfiNEjAgzQN7",
+  masterKey: "tXthH1tdnutpppnOIlbdd9SC"
 })
 
 // Comment the following line if you do not want to use masterKey.

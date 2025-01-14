@@ -1,0 +1,11 @@
+<nav class="nav-bar">
+  <div class="nav-placeholder"></div>
+  <div class="nav-title"><%= typeof title !== 'undefined' ? title : '母狗嘟嘟的相册' %></div>
+  <% if (locals.currentUser) { %>
+    <a href="/logout" class="text-button">
+      <span class="logout-text">退出</span>
+    </a>
+  <% } else { %>
+    <div class="nav-placeholder"></div>
+  <% } %>
+</nav> 

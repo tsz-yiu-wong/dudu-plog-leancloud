@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>嘟嘟</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="main-container">
+    <%- include('partials/nav') %>
+
+    <div class="album-info">
+        
+      <div class="album-header">
+        <a href="/album-list" class="text-button">
+          <span class="back-text">&lt 返回</span>
+        </a>
+        <div class="album-title-section">
+          <h1 class="album-title"><%= album.get('title') %></h1>
+          <span class="date">创建于 <%= album.get('createdAt').toLocaleDateString() %></span>
+        </div>
+        <% if (isAdmin || isCreator) { %>
+          <button onclick="openEditModal()" class="text-button">编辑</button>
+        <% } else { %>
+          <div class="nav-placeholder"></div>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (album.get('description')) { %>
+      <div class="description"><%= album.get('description') %></div>
+    <% } %>
+
+    <!-- 照片列表 -->
+    <% const images = album.get('images') %>
+    <% if (images && images.length > 0) { %>
+      <div class="photo-list">
+        <% images.forEach(function(image) { %>
+          <div class="photo-item">
+            <img 
+              src="<%= image.get('file').url() %>" 
+              alt="<%= image.get('name') %>"
+              onclick="showPreview('<%= image.get('file').url() %>', '<%= image.get('name') %>')"
+              oncontextmenu="showPhotoMenu(event, '<%= image.id %>'); return false;"
+              ontouchstart="startLongPress(event, '<%= image.id %>')"
+              ontouchend="cancelLongPress()"
+            >
+            <!-- <div class="photo-name"><%= image.get('name') %></div> -->
+          </div>
+        <% }); %>
+      </div>
+  
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-state-text">《<%= album.get('title') %>》暂无照片</div>
+      </div>
+    <% } %>
+
+    <!-- 图片预览模态框 -->
+    <div id="previewModal" class="preview-modal" onclick="closePreview()">
+      <div class="preview-container">
+        <div class="preview-nav preview-prev" onclick="prevImage(event)">&lt;</div>
+        <div class="preview-content">
+          <img id="previewImage" src="" alt="" 
+            onclick="closePreview()"
+            ontouchstart="handleTouchStart(event)"
+            ontouchmove="handleTouchMove(event)"
+            ontouchend="handleTouchEnd(event)">
+        </div>
+        <div class="preview-nav preview-next" onclick="nextImage(event)">&gt;</div>
+      </div>
+    </div>
+
+    <!-- 照片操作菜单 -->
+    <div id="photoMenu" class="photo-menu">
+      <% if (isAdmin || isCreator) { %>
+        <div class="photo-menu-item" onclick="renamePhoto()">重命名</div>
+        <div class="photo-menu-item" onclick="setAsCover()">设为封面</div>
+        <div class="photo-menu-item danger" onclick="deletePhoto()">删除照片</div>
+      <% } %>
+    </div>
+
+    <a href="javascript:void(0)" onclick="checkUploadPermission()" class="add-button">+</a>
+  </div>
+
+  <!-- 上传照片模态框 -->
+  <div id="uploadPhotoModal" class="modal">
+    <div class="modal-content">
+      <h2>上传照片</h2>
+      <form method="POST" action="/album-list/<%= album.id %>/photos/upload" enctype="multipart/form-data">
+        <div class="form-group">
+          <input type="text" 
+            name="photoName" 
+            placeholder="照片名称" 
+            required 
+            class="form-input"
+            value="<%= album.get('title') + ' ' + ((album.get('images') || []).length + 1) %>">
+        </div>
+        <div class="form-group">
+          <input type="file" name="photo" accept="image/*" required class="form-input">
+        </div>
+        <div class="form-buttons">
+          <button type="button" class="cancel-button" onclick="closeUploadModal()">取消</button>
+          <button type="submit" class="save-button">上传</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 编辑相册模态框 -->
+  <div id="editAlbumModal" class="modal">
+    <div class="modal-content">
+      <h2>编辑相册</h2>
+      <form method="POST" action="/album-list/<%= album.id %>/edit">
+        <div class="form-group">
+          <input type="text" name="title" placeholder="相册标题" required 
+            class="form-input" value="<%= album.get('title') %>">
+        </div>
+        <div class="form-group">
+          <textarea name="description" placeholder="相册描述（选填）" 
+            class="form-input" rows="3"><%= album.get('description') %></textarea>
+        </div>
+        <div class="form-group">
+          <select name="isPublic" class="form-input">
+            <option value="true" <%= album.get('isPublic') ? 'selected' : '' %>>所有人可见</option>
+            <option value="false" <%= !album.get('isPublic') ? 'selected' : '' %>>仅自己可见</option>
+          </select>
+        </div>
+        <div class="form-buttons">
+          <button type="button" class="delete-button" onclick="deleteAlbum()">删除相册</button>
+          <button type="button" class="cancel-button" onclick="closeEditModal()">取消</button>
+          <button type="submit" class="save-button">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    async function checkUploadPermission() {
+      try {
+        const response = await fetch('/check-upload-permission/<%= album.id %>')
+        const data = await response.json()
+        
+        if (data.canUpload) {
+          openUploadModal()
+        } else {
+          alert('乖乖看照片，不要乱点哦')
+        }
+      } catch (error) {
+        console.error('检查权限失败:', error)
+        alert('系统开小差了，请稍后再试')
+      }
+    }
+
+    function openUploadModal() {
+      document.getElementById('uploadPhotoModal').style.display = 'flex';
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadPhotoModal').style.display = 'none';
+    }
+
+    function openEditModal() {
+      document.getElementById('editAlbumModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editAlbumModal').style.display = 'none';
+    }
+
+    function deleteAlbum() {
+      if (confirm('确定要删除这个相册吗？此操作不可恢复。')) {
+        // 创建一个表单来发送 POST 请求
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = '/album-list/<%= album.id %>/delete'
+        document.body.appendChild(form)
+        form.submit()
+      }
+    }
+
+    // 点击模态框外部关闭
+    window.onclick = function(event) {
+      const editModal = document.getElementById('editAlbumModal');
+      const uploadModal = document.getElementById('uploadPhotoModal');
+      if (event.target === editModal) {
+        editModal.style.display = 'none';
+      } else if (event.target === uploadModal) {
+        uploadModal.style.display = 'none';
+      }
+    }
+
+    let currentImageIndex = 0;
+    const images = [
+      <%- images.map(function(image) {
+        return JSON.stringify({
+          id: image.id,
+          url: image.get('file').url(),
+          name: image.get('name')
+        });
+      }).join(',') %>
+    ];
+
+    function showPreview(url, name) {
+      currentImageIndex = images.findIndex(img => img.url === url);
+      const modal = document.getElementById('previewModal')
+      const img = document.getElementById('previewImage')
+      img.src = url
+      img.alt = name
+      modal.style.display = 'flex'
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none'
+    }
+
+    function prevImage(e) {
+      e.stopPropagation()
+      currentImageIndex = (currentImageIndex - 1 + images.length) % images.length
+      updatePreviewImage()
+    }
+
+    function nextImage(e) {
+      e.stopPropagation()
+      currentImageIndex = (currentImageIndex + 1) % images.length
+      updatePreviewImage()
+    }
+
+    function updatePreviewImage() {
+      const img = document.getElementById('previewImage')
+      img.src = images[currentImageIndex].url
+      img.alt = images[currentImageIndex].name
+    }
+
+    let longPressTimer;
+    const LONG_PRESS_DURATION = 500; // 长按时间阈值（毫秒）
+    let selectedPhotoId = null;
+
+    // 开始长按
+    function startLongPress(e, photoId) {
+      selectedPhotoId = photoId;
+      longPressTimer = setTimeout(() => {
+        showPhotoMenu(e, photoId)
+      }, LONG_PRESS_DURATION)
+    }
+
+    // 取消长按
+    function cancelLongPress() {
+      clearTimeout(longPressTimer)
+    }
+
+    // 显示照片操作菜单
+    function showPhotoMenu(e, photoId) {
+      e.preventDefault()
+      e.stopPropagation()
+      selectedPhotoId = photoId;
+      const menu = document.getElementById('photoMenu')
+      menu.style.display = 'block'
+      menu.style.left = `${e.clientX}px`
+      menu.style.top = `${e.clientY}px`
+
+      // 点击其他地方关闭菜单
+      document.addEventListener('click', function closeMenu() {
+        menu.style.display = 'none'
+        document.removeEventListener('click', closeMenu)
+      })
+    }
+
+    // 重命名照片
+    function renamePhoto() {
+      const photo = images.find(img => img.id === selectedPhotoId)
+      const newName = prompt('请输入新的照片名称:', photo.name)
+      if (newName && newName.trim()) {
+        fetch(`/album-list/<%= album.id %>/photos/${selectedPhotoId}/rename`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: newName.trim() })
+        }).then(() => {
+          window.location.reload()
+        })
+      }
+    }
+
+    function setAsCover() {
+      if (confirm('确定要将此照片设为封面吗？')) {
+        fetch(`/album-list/<%= album.id %>/set-cover/${selectedPhotoId}`, {
+          method: 'POST'
+        }).then(() => {
+          window.location.reload()
+        })
+      }
+    }
+
+    function deletePhoto() {
+      if (confirm('确定要删除这张照片吗？此操作不可恢复。')) {
+        fetch(`/album-list/<%= album.id %>/photos/${selectedPhotoId}/delete`, {
+          method: 'POST'
+        }).then(() => {
+          window.location.reload()
+        })
+      }
+    }
+
+    // 添加键盘导航
+    document.addEventListener('keydown', function(e) {
+      if (document.getElementById('previewModal').style.display === 'flex') {
+        if (e.key === 'ArrowLeft') {
+          prevImage(e)
+        } else if (e.key === 'ArrowRight') {
+          nextImage(e)
+        }
+      }
+    })
+
+    let touchStartX = null;
+    let touchStartY = null;
+    const SWIPE_THRESHOLD = 50; // 滑动阈值（像素）
+
+    function handleTouchStart(e) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault(); // 防止页面滚动
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchStartX) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      // 如果垂直移动太多，不视为滑动
+      if (deltaY > SWIPE_THRESHOLD) {
+        touchStartX = null;
+        touchStartY = null;
+        return;
+      }
+
+      // 检测水平滑动方向
+      if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+        if (deltaX > 0) {
+          // 向右滑动，显示上一张
+          prevImage(e);
+        } else {
+          // 向左滑动，显示下一张
+          nextImage(e);
+        }
+      } else {
+        // 如果移动距离太小，视为点击，关闭预览
+        closePreview();
+      }
+
+      touchStartX = null;
+      touchStartY = null;
+    }
+  </script>
+</body>
+</html> 

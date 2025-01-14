@@ -1,0 +1,571 @@
+:root {
+  --primary-color: #ff8da1;  /* 粉色主题 */
+  --header-bg: #FFE4E1;      /* 浅粉色标题背景 */
+  --text-color: #333;
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  background: none;
+  padding: 1rem;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.album-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  padding: 30px;
+}
+
+.album-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.album-content.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.album-content.locked img,
+.album-content.locked .album-placeholder {
+  filter: grayscale(100%);
+}
+
+.album-item a {
+  text-decoration: none;
+  display: block;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.album-item a img,
+.album-item a .album-placeholder,
+.album-content img,
+.album-content .album-placeholder {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+}
+
+.album-title {
+  text-align: center;
+  color: var(--text-color);
+}
+
+.add-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  margin-right: calc((100% - min(100%, 480px)) / 2);
+  width: 50px;
+  height: 50px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--box-shadow);
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+  z-index: 99;
+}
+
+.add-button:hover {
+  background: #FFB6C1;
+}
+
+.album-info {
+  border-bottom: 1px solid #eee;
+}
+
+.album-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  width: 100%;
+}
+
+.album-title-section {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.album-title-section h1 {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.album-info .date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.welcome-message {
+  padding: 20px;
+  text-align: center;
+}
+
+.login-link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: calc(100vh - 48px); /* 减去header高度 */
+}
+
+.login-title {
+  font-size: 1.2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 300px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.login-button:hover {
+  background: #FFB6C1;
+}
+
+.error-message {
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.register-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #666;
+}
+
+.register-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.empty-state {
+  height: calc(100vh - 200px);  /* 减去header等其他元素的高度 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #ddd;
+}
+
+.empty-state-text {
+  font-size: 1rem;
+  color: #666;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #666;
+  padding: 5px 15px;
+  white-space: pre-line;
+  border-bottom: 1px solid #eee;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.album-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee;
+  color: #ccc;
+}
+
+/* 模态框样式 */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--box-shadow);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  cursor: pointer;
+  height: 44px;  /* 确保两个按钮高度一致 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-button {
+  background: #eee;
+  color: var(--text-color);
+}
+
+.cancel-button:hover {
+  background: #ddd;
+}
+
+.form-buttons .login-button {
+  margin-top: 0;  /* 覆盖原来的 margin-top */
+}
+
+/* 导航栏样式 */
+.nav-bar {
+  background: var(--header-bg);
+  height: 56px;  /* 固定导航栏高度 */
+  padding: 0 16px;  /* 左右padding */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: 480px;
+}
+
+.nav-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-logout {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.nav-logout:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* 添加占位元素，保持布局平衡 */
+.nav-placeholder {
+  width: 41px;  /* 与退出按钮宽度一致 */
+}
+
+/* 添加主容器样式 */
+.main-container {
+  width: 100%;
+  max-width: 480px;  /* 手机屏幕的典型宽度 */
+  min-height: 100vh;
+  background: white;
+  position: relative;
+}
+
+/* 照片列表样式 */
+.photo-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.photo-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 0.9rem;
+}
+
+/* 返回按钮 */
+.back-button {
+  composes: text-button;
+}
+
+.back-icon {
+  font-size: 1.2rem;
+}
+
+.back-text {
+  font-size: 0.8rem;
+}
+
+.back-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.edit-button {
+  composes: text-button;
+}
+
+.edit-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.delete-button {
+  background: #ff4d4f;
+  color: white;
+}
+
+.delete-button:hover {
+  background: #ff7875;
+}
+
+.save-button {
+  background: var(--primary-color);  /* 默认使用更深的粉色 */
+  color: white;
+}
+
+.save-button:hover {
+  background: #FFB6C1;  /* 悬停时使用较浅的粉色 */
+}
+
+/* 文字按钮基础样式 */
+.text-button {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.text-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.nav-logout {
+  composes: text-button;
+}
+
+/* 图片预览模态框 */
+.preview-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.preview-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.preview-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 20px;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+  user-select: none;
+}
+
+.preview-nav:hover {
+  opacity: 1;
+}
+
+.preview-prev {
+  left: 0;
+}
+
+.preview-next {
+  right: 0;
+}
+
+.preview-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.preview-button {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.preview-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 照片操作菜单 */
+.photo-menu {
+  position: fixed;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 8px 0;
+  z-index: 1000;
+  display: none;
+}
+
+.photo-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.photo-menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.photo-menu-item.danger {
+  color: #ff4d4f;
+}
